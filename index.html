@@ -13,10 +13,7 @@
     text-align: center;
   }
 
-  h2 {
-    margin: 30px 0 15px;
-    color: #333;
-  }
+  h2 { margin: 30px 0 15px; color: #333; }
 
   .review-container {
     position: relative;
@@ -33,9 +30,7 @@
   .text { font-style: italic; margin-bottom: 10px; font-size: 15px; }
   .meta { font-size: 0.9em; color: #666; }
 
-  .controls {
-    margin-top: 15px;
-  }
+  .controls { margin-top: 15px; }
 
   .btn {
     display: inline-block;
@@ -50,9 +45,7 @@
     transition: background 0.3s;
   }
 
-  .btn:hover {
-    background: #005fa3;
-  }
+  .btn:hover { background: #005fa3; }
 </style>
 </head>
 <body>
@@ -70,8 +63,8 @@
 
 <script>
   // ================================
-  // Replace this with your Apps Script Web App URL
-  const endpoint = "https://script.google.com/macros/s/AKfycbzuXp3BcQyZyhWh260u7mGjUmeBhT7PdPfI2D25z2yHgGT1gsnl39BKYGO9nIAFTqeJzA/exec";
+  // Replace with your deployed Apps Script Web App URL
+  const endpoint = "https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec";
   // ================================
 
   let reviews = [];
@@ -142,9 +135,8 @@
     showReview();
   };
 
-  // Auto-refresh reviews every 5 seconds
+  // Auto-refresh and auto-slide
   setInterval(fetchReviews, 5000);
-  // Auto-slide reviews every 5 seconds
   setInterval(() => { if (reviews.length > 0) { idx = (idx + 1) % reviews.length; showReview(); } }, 5000);
 
   fetchReviews();
