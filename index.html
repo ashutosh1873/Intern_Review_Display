@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Intern Reviews Display</title>
+<style>
+  body {
+    font-family: "Segoe UI", Arial, sans-serif;
+    background: #f5f7fa;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+  }
+
+  h2 {
+    margin: 30px 0 15px;
+    color: #333;
+  }
+
+  .review-container {
+    position: relative;
+    max-width: 700px;
+    margin: 20px auto;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    padding: 25px;
+    transition: opacity 0.5s ease;
+  }
+
+  .stars { color: gold; font-size: 22px; margin-bottom: 10px; }
+  .text { font-style: italic; margin-bottom: 10px; font-size: 15px; }
+  .meta { font-size: 0.9em; color: #666; }
+
+  .controls {
+    margin-top: 15px;
+  }
+
+  .btn {
+    display: inline-block;
+    margin: 5px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: none;
+    background: #0078D7;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.3s;
+  }
+
+  .btn:hover {
+    background: #005fa3;
+  }
+</style>
+</head>
+<body>
+
+<h2>Intern Reviews</h2>
+
+<div id="reviewContainer" class="review-container">
+  <p>Loading reviews...</p>
+</div>
+
+<div class="controls">
+  <button class="btn" id="prevBtn">⟨ Prev</button>
+  <button class="btn" id="nextBtn">Next ⟩</button>
+</div>
+
+<script>
+  // ================================
+  // Replace this with your Apps Script Web App URL
+  const endpoint = "https://script.google.com/macros/s/AKfycbzuXp3BcQyZyhWh260u7mGjUmeBhT7PdPfI2D25z2yHgGT1gsnl39BKYGO9nIAFTqeJzA/exec";
+  // ================================
+
+  let reviews = [];
+  let idx = 0;
+  const container = document.getElementById('reviewContainer');
+
+  async function fetchReviews() {
+    try {
+      const res = await fetch(endpoint, { cache: 'no-store' });
+      reviews = await res.json();
+
+      if (!reviews || reviews.length === 0) {
+        container.innerHTML = "<p>No reviews yet.</p>";
+        return;
+      }
+
+      idx = 0;
+      showReview();
+    } catch (err) {
+      console.error(err);
+      container.innerHTML = "<p>Error loading reviews.</p>";
+    }
+  }
+
+  function starsHTML(n) {
+    n = parseInt(n) || 0;
+    let str = "";
+    for (let i = 1; i <= 5; i++) {
+      str += (i <= n) ? '★' : '☆';
+    }
+    return str;
+  }
+
+  function showReview() {
+    if (reviews.length === 0) return;
+    const r = reviews[idx];
+    const date = r.timestamp ? new Date(r.timestamp).toLocaleDateString() : '';
+    const name = r.anonymous ? "Anonymous Intern" : (r.name || "Unnamed");
+    const batch = r.anonymous ? "" : (r.batch ? ` (${r.batch})` : "");
+
+    container.style.opacity = 0;
+    setTimeout(() => {
+      container.innerHTML = `
+        <div class="stars">${starsHTML(r.rating)}</div>
+        <div class="text">"${escapeHtml(r.review)}"</div>
+        <div class="meta">— ${escapeHtml(name)}${escapeHtml(batch)}, ${date}</div>
+      `;
+      container.style.opacity = 1;
+    }, 200);
+  }
+
+  function escapeHtml(s) {
+    return String(s || "").replace(/[&<>"']/g, m => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    }[m]));
+  }
+
+  // Prev/Next buttons
+  document.getElementById('prevBtn').onclick = () => {
+    if (reviews.length === 0) return;
+    idx = (idx - 1 + reviews.length) % reviews.length;
+    showReview();
+  };
+
+  document.getElementById('nextBtn').onclick = () => {
+    if (reviews.length === 0) return;
+    idx = (idx + 1) % reviews.length;
+    showReview();
+  };
+
+  // Auto-refresh reviews every 5 seconds
+  setInterval(fetchReviews, 5000);
+  // Auto-slide reviews every 5 seconds
+  setInterval(() => { if (reviews.length > 0) { idx = (idx + 1) % reviews.length; showReview(); } }, 5000);
+
+  fetchReviews();
+</script>
+
+</body>
+</html>
