@@ -7,35 +7,55 @@
 <style>
   body {
     font-family: "Segoe UI", Arial, sans-serif;
-    background: #f5f7fa;
+    background: #f4f6f8;
     margin: 0;
     padding: 0;
     text-align: center;
   }
 
-  h2 { margin: 30px 0 15px; color: #333; }
+  h2 {
+    margin: 30px 0 20px;
+    color: #333;
+    font-weight: 600;
+  }
 
   .review-container {
     position: relative;
-    max-width: 700px;
-    margin: 20px auto;
+    max-width: 750px;
+    margin: 25px auto;
     background: white;
     border-radius: 15px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    padding: 25px;
-    transition: opacity 0.5s ease;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+    padding: 30px;
+    transition: opacity 0.8s ease-in-out;
   }
 
-  .stars { color: gold; font-size: 22px; margin-bottom: 10px; }
-  .text { font-style: italic; margin-bottom: 10px; font-size: 15px; }
-  .meta { font-size: 0.9em; color: #666; }
+  .stars {
+    color: #ffb400;
+    font-size: 24px;
+    margin-bottom: 12px;
+  }
 
-  .controls { margin-top: 15px; }
+  .text {
+    font-style: italic;
+    font-size: 16px;
+    margin-bottom: 12px;
+    line-height: 1.5;
+  }
+
+  .meta {
+    font-size: 0.95em;
+    color: #555;
+  }
+
+  .controls {
+    margin-top: 15px;
+  }
 
   .btn {
     display: inline-block;
     margin: 5px;
-    padding: 8px 16px;
+    padding: 9px 18px;
     border-radius: 8px;
     border: none;
     background: #0078D7;
@@ -46,6 +66,10 @@
   }
 
   .btn:hover { background: #005fa3; }
+
+  .fade {
+    opacity: 0;
+  }
 </style>
 </head>
 <body>
@@ -62,10 +86,10 @@
 </div>
 
 <script>
-  // ================================
+  // ==================================
   // Replace with your deployed Apps Script Web App URL
   const endpoint = "https://script.google.com/macros/s/AKfycbysqa2MJ7ZEEBXhK-bRZaSWFegmOnx_X187zV9eOVncifwMSRua8VLXBZPjtxMxqU8vtA/exec";
-  // ================================
+  // ==================================
 
   let reviews = [];
   let idx = 0;
@@ -73,7 +97,7 @@
 
   async function fetchReviews() {
     try {
-      const res = await fetch(endpoint, { cache: 'no-store' });
+      const res = await fetch(endpoint + "?action=list", { cache: 'no-store' });
       reviews = await res.json();
 
       if (!reviews || reviews.length === 0) {
@@ -98,6 +122,12 @@
     return str;
   }
 
+  function escapeHtml(s) {
+    return String(s || "").replace(/[&<>"']/g, m => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    }[m]));
+  }
+
   function showReview() {
     if (reviews.length === 0) return;
     const r = reviews[idx];
@@ -105,24 +135,18 @@
     const name = r.anonymous ? "Anonymous Intern" : (r.name || "Unnamed");
     const batch = r.anonymous ? "" : (r.batch ? ` (${r.batch})` : "");
 
-    container.style.opacity = 0;
+    container.classList.add("fade");
     setTimeout(() => {
       container.innerHTML = `
         <div class="stars">${starsHTML(r.rating)}</div>
         <div class="text">"${escapeHtml(r.review)}"</div>
         <div class="meta">— ${escapeHtml(name)}${escapeHtml(batch)}, ${date}</div>
       `;
-      container.style.opacity = 1;
-    }, 200);
+      container.classList.remove("fade");
+    }, 400);
   }
 
-  function escapeHtml(s) {
-    return String(s || "").replace(/[&<>"']/g, m => ({
-      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-    }[m]));
-  }
-
-  // Prev/Next buttons
+  // Prev/Next Buttons
   document.getElementById('prevBtn').onclick = () => {
     if (reviews.length === 0) return;
     idx = (idx - 1 + reviews.length) % reviews.length;
@@ -135,9 +159,16 @@
     showReview();
   };
 
-  // Auto-refresh and auto-slide
-  setInterval(fetchReviews, 5000);
-  setInterval(() => { if (reviews.length > 0) { idx = (idx + 1) % reviews.length; showReview(); } }, 5000);
+  // Auto-refresh every 30 seconds (optional)
+  setInterval(fetchReviews, 60000);
+
+  // Auto-slide every 7 seconds
+  setInterval(() => {
+    if (reviews.length > 0) {
+      idx = (idx + 1) % reviews.length;
+      showReview();
+    }
+  }, 7000);
 
   fetchReviews();
 </script>
